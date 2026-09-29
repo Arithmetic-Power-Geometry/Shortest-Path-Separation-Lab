@@ -8,10 +8,8 @@ def main():
     rows = []
     for L in range(1, 41):
         G, H, s, e, t, meta = finite_gap_family(L)
-        result = verify_pair(G, H, s, e, t)
+        result = verify_pair(G, H, s, e, t, require_equal_degree_sequence=True)
         n = G.number_of_nodes()
-        expected_G = meta["k"] + 1
-        expected_H = meta["k"] + 1 + 2 * L
         rows.append({
             "L": L,
             "n": n,
@@ -23,12 +21,12 @@ def main():
             "distance_H": result["distance_H"],
             "gap": result["gap"],
             "theoretical_gap": meta["theoretical_gap"],
-            "expected_distance_G": expected_G,
-            "expected_distance_H": expected_H,
+            "expected_distance_G": meta["expected_G"],
+            "expected_distance_H": meta["expected_H"],
             "formula_n_ok": n == meta["n_formula"],
             "formula_gap_ok": result["gap"] == meta["theoretical_gap"],
-            "formula_G_ok": result["distance_G"] == expected_G,
-            "formula_H_ok": result["distance_H"] == expected_H,
+            "formula_G_ok": result["distance_G"] == meta["expected_G"],
+            "formula_H_ok": result["distance_H"] == meta["expected_H"],
             **result["checks"],
         })
 
@@ -41,11 +39,12 @@ def main():
     failures = [r for r in rows if not (
         r["accepted"] and r["formula_n_ok"] and r["formula_gap_ok"]
         and r["formula_G_ok"] and r["formula_H_ok"]
+        and r["same_labeled_degrees"]
     )]
     if failures:
-        raise AssertionError(f"family verification failed: {failures[:3]}")
+        raise AssertionError(f"degree-preserving family verification failed: {failures[:3]}")
 
-    print(f"verified {len(rows)} family instances")
+    print(f"verified {len(rows)} degree-preserving family instances")
     print("first:", rows[0])
     print("last:", rows[-1])
 
