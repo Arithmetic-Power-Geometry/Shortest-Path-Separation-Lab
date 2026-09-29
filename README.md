@@ -1,10 +1,10 @@
 # Shortest-Path Separation Lab
 
-A reproducible graph-algorithm laboratory for testing whether identical **pre-failure source shortest-path structure** can coexist with substantially different **single-edge replacement-distance behavior**.
+A reproducible graph-algorithm laboratory for testing how much **single-edge failure response** can differ between graphs that are indistinguishable under a strong intact single-source shortest-path observable.
 
-## Research question
+## Frozen concept
 
-For connected, unweighted graphs `G` and `H` on the same labeled vertex set with common source `s`, define the observable source-shortest-path structure
+For a connected unweighted graph `G) with source `s`, define
 
 ```
 S(G,s) = (d_s, SPDAG_s, sigma_s)
@@ -12,56 +12,85 @@ S(G,s) = (d_s, SPDAG_s, sigma_s)
 
 where:
 
-- `d_s(v)` is the shortest-path distance from `s` to `v`;
-- `SPDAG_s` is the directed acyclic graph containing exactly the oriented edges `u -> v` satisfying `d_s(v)=d_s(u)+1`;
-- `sigma_s(v)` is the number of shortest paths from `s` to `v`.
+- `d_s(v)` is the exact distance from `s` to every vertex;
+- `SPDAG_s` contains every directed tight edge `u -> v` with `d_s(v)=d_s(u)+1`;
+- `sigma_s(v)` is the exact number of shortest paths from `s` to `v`.
 
-The primary experiment searches for pairs satisfying
-
-```
-|V(G)| = |V(H)|
-|E(G)| = |E(H)|
-S(G,s) = S(H,s)
-```
-
-but, for a corresponding failed edge `e` and target `t`, both post-failure distances are finite and
+The lab studies pairs `G,H` with the same labeled vertex set, the same edge count, and
 
 ```
-d_{G-e}(s,t) != d_{H-e}(s,t).
+S(G,s) = S(H,s),
 ```
 
-The extremal target is a family with a gap growing linearly with `n`.
+but whose distances after deletion of the **same common edge** differ.
 
-## Why this repository exists
+## Explicit finite-gap family
 
-The repository is a theorem-validation lab. It does not assume novelty. Every accepted witness must pass mechanical checks showing that the requested pre-failure invariants are exactly equal before any post-failure separation is measured.
+For parameter `L>=1`:
 
-## Current comparison context
+1. add a common edge `s-r`;
+2. from `r`, create two length-`L` branches ending at `t` and `x`;
+3. independently create a backup path of length `L+1` from `s` ending at `b`;
+4. in `G`, add the same-level edge `b-t`;
+5. in `H`, add the same-level edge `b-x`.
 
-This project is adjacent to, but distinct from, classical replacement paths, distance-sensitivity oracles, and fault-tolerant BFS/preserver structures. Those lines of work compute or preserve failure-aware distances. This lab instead tests a separation question: how different can failure response be among graphs that are indistinguishable under a chosen complete source-shortest-path observable?
+The differing edge is absent from the intact source shortest-path DAG because `b,t,x` all lie at the same source distance.
+
+After failure of the common edge `e=(s,r)`:
+
+```
+d_{G-e}(s,t) = L + 2
+d_{H-e}(s,t) = 3L + 2
+gap            = 2L
+```
+
+The construction has
+
+```
+n = 3L + 3,
+```
+
+hence
+
+```
+gap = 2(n-3)/3 = Theta(n).
+```
+
+The workflow verifies these identities mechanically; the formulas are not accepted merely because they appear in this README.
+
+## Comparison with existing paradigms
+
+The project is intentionally not presented as a new replacement-path algorithm. Classical replacement paths compute shortest routes after failures; distance-sensitivity oracles preprocess a graph to answer failure-conditioned distances; fault-tolerant BFS/preserver structures explicitly retain additional failure-aware information.
+
+This lab asks a different separation question: **how different can failure response be when the intact source shortest-path structure is exactly the same?** The generated `comparison_existing.csv` records this distinction operationally.
 
 ## Reproduce
 
 ```bash
+pip install -r requirements.txt
 python -m experiments.run_family
 python -m experiments.search_small
 python -m experiments.make_artifacts
 ```
 
-Generated artifacts are written to `artifacts/`.
+Generated outputs:
 
-## Repository structure
+- `family_results.csv` — row-by-row theorem checks
+- `small_search.csv` — smallest strict finite-vs-finite collision found by exhaustive search within the configured range
+- `table_summary.csv` — publication-ready numeric summary
+- `comparison_existing.csv` — comparison against standard intact/fault-aware paradigms
+- `gap_vs_n.png` — empirical/theoretical linear-gap figure
+- `witness_G.png`, `witness_H.png` — explicit witness visualization
+- `algorithm.txt` — verification algorithm
+- `theorem_check.txt` — machine-generated theorem statement and formulas
 
-- `src/structure.py` — source distances, shortest-path DAG, multiplicities
-- `src/replacement.py` — single-edge replacement distances
-- `src/verify.py` — strict pair validator
-- `src/constructions.py` — explicit candidate families
-- `experiments/run_family.py` — family sweep
-- `experiments/search_small.py` — exact small-graph search
-- `experiments/make_artifacts.py` — CSV/table/figure artifact generation
-- `.github/workflows/reproduce.yml` — reproducible CI workflow
+GitHub Actions runs the full workflow on every push and uploads the artifact bundle.
 
-## License and copyright
+## Research status
+
+The repository validates the mathematics and produces reproducible artifacts. It does **not** by itself establish literature novelty. The closest established areas include replacement paths, distance-sensitivity oracles, and fault-tolerant shortest-path preservers.
+
+## License
 
 Copyright © 2026 Mohammad Amir Khusru Akhtar
 
