@@ -1,11 +1,25 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it using the metadata below."
-title: "Shortest-Path Separation Lab"
-type: software
+message: "If you use this software or the associated research, please cite the work below."
+title: "Intact Shortest-Path Structure Does Not Determine Failure Response: A Tight Degree-Preserving Separation"
+type: article
 authors:
   - family-names: "Akhtar"
     given-names: "Mohammad Amir Khusru"
+    orcid: "https://orcid.org/0000-0002-3432-4199"
 year: 2026
-license: Apache-2.0
+version: "V1"
+doi: "10.5281/zenodo.23035855"
+url: "https://doi.org/10.5281/zenodo.23035855"
 repository-code: "https://github.com/Arithmetic-Power-Geometry/Shortest-Path-Separation-Lab"
-version: 1.0.0
+license: Apache-2.0
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Akhtar"
+      given-names: "Mohammad Amir Khusru"
+      orcid: "https://orcid.org/0000-0002-3432-4199"
+  title: "Intact Shortest-Path Structure Does Not Determine Failure Response: A Tight Degree-Preserving Separation"
+  year: 2026
+  version: "V1"
+  doi: "10.5281/zenodo.23035855"
+  url: "https://doi.org/10.5281/zenodo.23035855"
