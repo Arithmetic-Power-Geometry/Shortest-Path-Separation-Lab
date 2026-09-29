@@ -2,62 +2,40 @@
 
 ## Observable equivalence
 
-For connected unweighted graphs with common labeled vertex set and source `s`, write
+For connected simple unweighted graphs on a common labeled vertex set with source s, compare
 
 ```
-G ~_s H
+S+(G,s) = (d_s, SPDAG_s, sigma_s, deg_G).
 ```
 
-descriptively when all of the following are identical:
+Equality means identical source distances, identical complete source shortest-path DAG, identical source shortest-path multiplicities, and identical degree at every labeled vertex.
 
-- source-distance vector `d_s`;
-- complete source shortest-path DAG `SPDAG_s`;
-- source-to-vertex shortest-path multiplicities `sigma_s`;
-- number of edges.
+## Degree-preserving failure-response separation
 
-No new formal terminology is claimed by this notation.
-
-## Failure-response separation
-
-For a common edge `e` and target `t`, compare
+For L>=1 construct a common edge s-r, three length-L branches from r ending at t,x,y, and an independent length-(L+1) path from s ending at b. The graphs differ only by a degree-preserving same-layer 2-switch:
 
 ```
-d_{G-e}(s,t)
-d_{H-e}(s,t).
+G: {b-t, x-y}
+H: {b-x, t-y}.
 ```
 
-The central validated statement is:
+Because b,t,x,y all lie at source distance L+1, the switched edges are non-tight and absent from the intact source SPDAG. They do not alter d_s or sigma_s.
 
-> There is an infinite family of connected unweighted graph pairs with identical intact source-shortest-path structure and equal edge counts, but with a finite single-edge replacement-distance gap linear in the number of vertices.
-
-## Explicit family
-
-For `L>=1`:
-
-- common edge `s-r`;
-- two length-`L` branches from `r` ending at `t` and `x`;
-- an independent backup path of length `L+1` from `s` ending at `b`;
-- `G` contains `b-t`;
-- `H` contains `b-x`.
-
-The differing edges join vertices at the same intact source distance, so neither appears in the source shortest-path DAG.
-
-For the common failed edge `e=(s,r)`:
+For e=(s,r):
 
 ```
-n = 3L + 3
-
-d_{G-e}(s,t) = L + 2
-
-d_{H-e}(s,t) = 3L + 2
-
-gap = 2L = 2(n-3)/3.
+n = 4L+3
+d_{G-e}(s,t) = L+2
+d_{H-e}(s,t) = 3L+2
+gap = 2L = (n-3)/2.
 ```
 
-Thus the verified lower-bound family gives a `Theta(n)` finite separation.
+Thus the family gives a finite Omega(n) separation while preserving S+ exactly.
 
-## Upper-bound context
+## Extremal order
 
-For connected unweighted graphs with finite post-failure source-target distance, every simple replacement path has at most `n-1` edges. Consequently the absolute difference between two finite replacement distances is at most `n-2` (and trivially `O(n)`). Combined with the explicit family, the extremal order of growth is therefore `Theta(n)`.
+Whenever both post-failure distances are finite in an n-vertex simple unweighted graph, each shortest replacement path is simple and has length at most n-1. Hence any finite pairwise response difference is O(n). Together with the construction, the maximum possible order of finite separation under the stated equivalence is Theta(n).
 
-The present repository verifies the lower-bound construction computationally; the upper bound is the elementary finite simple-path bound.
+## Sufficiency endpoint
+
+The complete labeled all-pairs distance matrix determines a simple unweighted graph, because uv is an edge exactly when d(u,v)=1. Therefore complete all-pairs distances determine all single-edge replacement responses. This is a sufficiency endpoint, not a novelty claim.
