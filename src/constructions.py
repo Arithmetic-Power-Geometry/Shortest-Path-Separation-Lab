@@ -1,71 +1,75 @@
 import networkx as nx
 
-def path_with_detour_pair(k):
+def finite_gap_family(L):
     """
-    Candidate finite-gap family.
+    Explicit unweighted finite-gap separation family.
 
-    Core path: 0-1-...-k, source=0, target=k.
-    Both graphs have the same core shortest-path structure.
-    Each receives the same number of extra vertices and edges, arranged
-    so all added routes are longer than the original source shortest paths.
+    Common visible source structure:
+      s -- r, with two length-L branches from r ending at t and x;
+      an independent backup path of length k=L+1 from s ending at b.
 
-    The present construction is deliberately transparent and is verified
-    by the strict checker before it is treated as a witness.
+    G adds the same-level edge b--t.
+    H adds the same-level edge b--x.
+
+    Since b,t,x all have source distance k in the intact graph, the differing
+    edge is non-tight and absent from the source shortest-path DAG in both
+    graphs. Thus the source-distance vector, SPDAG, shortest-path counts,
+    |V|, and |E| coincide.
+
+    After failure of e=(s,r):
+      d_{G-e}(s,t) = k + 1
+      d_{H-e}(s,t) = k + 1 + 2L
+
+    Hence the finite gap is 2L. The number of vertices is n=3L+3, so
+    gap = 2(n-3)/3 = Theta(n).
     """
-    if k < 5:
-        raise ValueError("k must be at least 5")
+    if L < 1:
+        raise ValueError("L must be at least 1")
 
     G = nx.Graph()
     H = nx.Graph()
-    core = list(range(k + 1))
+
+    s = "s"
+    r = "r"
+    t = "t"
+    x = "x"
+    k = L + 1
+
     for X in (G, H):
-        X.add_nodes_from(core)
-        X.add_edges_from((i, i + 1) for i in range(k))
+        X.add_edge(s, r)
 
-    # Same labeled auxiliary vertices in both graphs.
-    aux = list(range(k + 1, 2 * k + 3))
-    G.add_nodes_from(aux)
-    H.add_nodes_from(aux)
+        # branch r -> ... -> t of length L
+        prev = r
+        for i in range(1, L):
+            v = f"t{i}"
+            X.add_edge(prev, v)
+            prev = v
+        X.add_edge(prev, t)
 
-    # Failed edge lies near the middle.
-    j = k // 2
-    failed = (j, j + 1)
+        # branch r -> ... -> x of length L
+        prev = r
+        for i in range(1, L):
+            v = f"x{i}"
+            X.add_edge(prev, v)
+            prev = v
+        X.add_edge(prev, x)
 
-    # G: a relatively short dormant bypass.
-    # H: same number of auxiliary edges, but arranged as a longer bypass.
-    # Both are checked to ensure they do not alter the original source structure.
-    left, right = j, j + 1
+        # independent backup path s -> ... -> b of length k=L+1
+        prev = s
+        for i in range(1, k):
+            v = f"b{i}"
+            X.add_edge(prev, v)
+            prev = v
+        b = "b"
+        X.add_edge(prev, b)
 
-    g_chain = aux[:4]
-    G.add_edges_from([
-        (left, g_chain[0]), (g_chain[0], g_chain[1]),
-        (g_chain[1], g_chain[2]), (g_chain[2], g_chain[3]),
-        (g_chain[3], right),
-    ])
+    G.add_edge("b", t)
+    H.add_edge("b", x)
 
-    # Remaining auxiliary vertices are attached identically as long leaves
-    # so |V| and |E| stay matched without entering the source SPDAG.
-    rem_g = aux[4:]
-    for idx, v in enumerate(rem_g):
-        anchor = max(0, left - 2)
-        if idx == 0:
-            G.add_edge(anchor, v)
-        else:
-            G.add_edge(rem_g[idx-1], v)
-
-    h_chain = aux
-    H.add_edge(left, h_chain[0])
-    for a, b in zip(h_chain, h_chain[1:]):
-        H.add_edge(a, b)
-    H.add_edge(h_chain[-1], right)
-
-    # Equalize edge count by adding G-side edges among auxiliary vertices only
-    # if needed. The verifier still rejects the construction if any such edge
-    # changes the source-shortest-path observable.
-    next_pairs = [(aux[i], aux[i+2]) for i in range(max(0, len(aux)-2))]
-    p = 0
-    while G.number_of_edges() < H.number_of_edges() and p < len(next_pairs):
-        G.add_edge(*next_pairs[p])
-        p += 1
-
-    return G, H, 0, failed, k
+    failed_edge = (s, r)
+    return G, H, s, failed_edge, t, {
+        "L": L,
+        "k": k,
+        "theoretical_gap": 2 * L,
+        "n_formula": 3 * L + 3,
+    }
