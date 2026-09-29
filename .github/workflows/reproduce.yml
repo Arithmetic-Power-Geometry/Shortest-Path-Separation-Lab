@@ -1,0 +1,23 @@
+name: Reproduce separation artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m experiments.run_family
+      - run: python -m experiments.search_small
+      - run: python -m experiments.make_artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: separation-artifacts
+          path: artifacts/
